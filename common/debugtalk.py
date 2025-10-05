@@ -9,8 +9,8 @@ import time
 from hashlib import sha1
 from conf.setting import DIR_BASE
 from pandas.tseries.offsets import Day
-from common.operationcsv import read_csv
-from common.readyaml import ReadYamlData
+from common.parser_csv import read_csv
+from common.parser_yaml import ReadYamlData
 import csv
 
 

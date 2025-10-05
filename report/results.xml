@@ -1,1 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="19" time="0.981" timestamp="2025-10-05T17:13:23.557399+08:00" hostname="HUAWEI-MATEBOOK14-2077"><testcase classname="testcase.Business interface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info0]" time="0.311" /><testcase classname="testcase.Business interface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info1]" time="0.037" /><testcase classname="testcase.Business interface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info2]" time="0.042" /><testcase classname="testcase.Business interface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info3]" time="0.040" /><testcase classname="testcase.Business interface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info4]" time="0.029" /><testcase classname="testcase.ProductManager.test_productList.TestLogin" name="test_get_product_list[base_info0-testcase0]" time="0.030" /><testcase classname="testcase.ProductManager.test_productList.TestLogin" name="test_get_product_detail[base_info0-testcase0]" time="0.046" /><testcase classname="testcase.ProductManager.test_productList.TestLogin" name="test_commit_order[base_info0-testcase0]" time="0.045" /><testcase classname="testcase.ProductManager.test_productList.TestLogin" name="test_order_pay[base_info0-testcase0]" time="0.038" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_add_user[base_info0-testcase0]" time="0.028" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_add_user[base_info1-testcase1]" time="0.015" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_add_user[base_info2-testcase2]" time="0.032" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_add_user[base_info3-testcase3]" time="0.017" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_update_user[base_info0-testcase0]" time="0.023" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_delete_user[base_info0-testcase0]" time="0.023" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_delete_user[base_info1-testcase1]" time="0.016" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_delete_user[base_info2-testcase2]" time="0.018" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_delete_user[base_info3-testcase3]" time="0.039" /><testcase classname="testcase.Single interface.test_debug_api.TestUserManager" name="test_query_user[base_info0-testcase0]" time="0.031" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="30" time="2.786" timestamp="2025-10-06T00:37:08.637887+08:00" hostname="HUAWEI-MATEBOOK14-2077"><testcase classname="testcase.BusinessInterface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info0]" time="0.516" /><testcase classname="testcase.BusinessInterface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info1]" time="0.171" /><testcase classname="testcase.BusinessInterface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info2]" time="0.052" /><testcase classname="testcase.BusinessInterface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info3]" time="0.055" /><testcase classname="testcase.BusinessInterface.test_business_scenario.TestEBusinessScenario" name="test_business_scenario[case_info4]" time="0.041" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_get_product_list[base_info0-testcase0]" time="0.057" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_get_product_list[base_info1-testcase1]" time="0.081" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_get_product_detail[base_info0-testcase0]" time="0.055" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_get_product_detail[base_info1-testcase1]" time="0.044" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_commit_order[base_info0-testcase0]" time="0.070" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_commit_order[base_info1-testcase1]" time="0.060" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_order_pay[base_info0-testcase0]" time="0.047" /><testcase classname="testcase.ProductManager.test_product.TestProduct" name="test_order_pay[base_info1-testcase1]" time="0.039" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info0-testcase0]" time="0.038" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info1-testcase1]" time="0.029" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info2-testcase2]" time="0.046" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info3-testcase3]" time="0.051" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info4-testcase4]" time="0.047" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info5-testcase5]" time="0.033" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info6-testcase6]" time="0.025" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_add_user[base_info7-testcase7]" time="0.042" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_update_user[base_info0-testcase0]" time="0.028" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_update_user[base_info1-testcase1]" time="0.026" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_delete_user[base_info0-testcase0]" time="0.032" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_delete_user[base_info1-testcase1]" time="0.038" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_delete_user[base_info2-testcase2]" time="0.029" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_delete_user[base_info3-testcase3]" time="0.018" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_delete_user[base_info4-testcase4]" time="0.017" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_query_user[base_info0-testcase0]" time="0.031" /><testcase classname="testcase.UserManager.test_user.TestUser" name="test_query_user[base_info1-testcase1]" time="0.024"><failure message="AssertionError">self = &lt;test_user.TestUser object at 0x0000020CDB5CF490&gt;
+base_info = {'api_name': '用户查询', 'header': {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}, 'method': 'POST', 'url': '/dar/user/queryUser'}
+testcase = {'params': {'user_id': 123839387391912}}
+
+    @allure.story(next(c_id) + "查询用户")
+    @pytest.mark.run(order=4)
+    @pytest.mark.parametrize('base_info,testcase', get_testcase_yaml("./testcase/UserManager/queryUser.yaml"))
+    def test_query_user(self, base_info, testcase):
+        allure.dynamic.title(testcase['case_name'])
+&gt;       RequestBase().specification_yaml(base_info, testcase)
+
+testcase\UserManager\test_user.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+base\apiutil.py:133: in specification_yaml
+    raise e
+base\apiutil.py:130: in specification_yaml
+    raise e
+base\apiutil.py:124: in specification_yaml
+    self.asserts.assert_result(validation, res_json, status_code, raw_response=raw_text)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;common.assertions.Assertions object at 0x0000020CDB6FA4B0&gt;
+expected = [{'contains': {'status_code': 405}}]
+response = {'msg': '用户ID错误', 'msg_code': -1}, status_code = 200
+raw_response = '{"msg":"用户ID错误","msg_code":-1}\n'
+
+    def assert_result(self, expected, response, status_code, raw_response=None):
+        """
+        断言，通过断言all_flag标记，all_flag==0表示测试通过，否则为失败
+        :param expected: 预期结果
+        :param response: 实际响应结果
+        :param status_code: 响应code码
+        :return:
+        """
+        all_flag = 0
+        try:
+            logs.info("yaml文件预期结果：%s" % expected)
+            # logs.info("实际结果：%s" % response)
+            # all_flag = 0
+            for yq in expected:
+                for key, value in yq.items():
+                    if key == "contains":
+                        flag = self.contains_assert(value, response, status_code, raw_response=raw_response)
+                        all_flag = all_flag + flag
+                    elif key == "eq":
+                        flag = self.equal_assert(value, response)
+                        all_flag = all_flag + flag
+                    elif key == 'ne':
+                        flag = self.not_equal_assert(value, response)
+                        all_flag = all_flag + flag
+                    elif key == 'rv':
+                        flag = self.assert_response_any(actual_results=response, expected_results=value)
+                        all_flag = all_flag + flag
+                    elif key == 'db':
+                        flag = self.assert_mysql_data(value)
+                        all_flag = all_flag + flag
+                    else:
+                        logs.error("不支持此种断言方式")
+    
+        except Exception as exceptions:
+            logs.error('接口断言异常，请检查yaml预期结果值是否正确填写!')
+            raise exceptions
+    
+        if all_flag == 0:
+            logs.info("测试成功")
+            assert True
+        else:
+            logs.error("测试失败")
+&gt;           assert False
+                   ^^^^^
+E           AssertionError
+
+common\assertions.py:222: AssertionError</failure></testcase></testsuite></testsuites>

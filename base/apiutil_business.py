@@ -3,7 +3,7 @@
 
 
 from common.sendrequest import SendRequest
-from common.readyaml import ReadYamlData
+from common.parser_yaml import ReadYamlData
 from common.recordlog import logs
 from conf.operationConfig import OperationConfig
 from common.assertions import Assertions

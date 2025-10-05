@@ -8,7 +8,7 @@ import time
 from conf import setting
 from common.recordlog import logs
 from requests import utils
-from common.readyaml import ReadYamlData
+from common.parser_yaml import ReadYamlData
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 

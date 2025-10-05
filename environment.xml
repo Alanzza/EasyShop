@@ -17,7 +17,7 @@
     </parameter>
     <parameter>
         <key>BaseUrl</key>
-        <value>https://www.baidu.com</value>
+        <value>127.0.0.1:8787</value>
     </parameter>
     <parameter>
         <key>environment</key>

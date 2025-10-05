@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from common.readyaml import ReadYamlData
+from common.parser_yaml import ReadYamlData
 from base.removefile import remove_file
 from common.dingRobot import send_dd_msg
 from conf.setting import dd_msg
@@ -48,7 +48,7 @@ def generate_test_summary(terminalreporter):
         duration = 0.0
 
     summary = f"""
-    自动化测试结果，通知如下，请着重关注测试失败的接口，具体执行结果如下：
+    自动化测试结果 (请着重关注测试失败的接口)：
     测试用例总数：{total}
     测试通过数：{passed}
     测试失败数：{failed}

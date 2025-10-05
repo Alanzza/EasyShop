@@ -7,7 +7,7 @@ import jsonpath
 
 from common.assertions import Assertions
 from common.debugtalk import DebugTalk
-from common.readyaml import get_testcase_yaml, ReadYamlData
+from common.parser_yaml import get_testcase_yaml, ReadYamlData
 from common.recordlog import logs
 from common.sendrequest import SendRequest
 from conf.operationConfig import OperationConfig
