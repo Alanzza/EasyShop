@@ -120,18 +120,27 @@ class RequestBase(object):
                                         method=case_method,
                                         file=files, **tc)
                 res_text = res.text
-                allure.attach(res_text, '接口响应信息', allure.attachment_type.TEXT)
                 status_code = res.status_code
-                allure.attach(self.allure_attach_response(res.json()), '接口响应信息', allure.attachment_type.TEXT)
+                try:
+                    res_body = res.json()
+                except JSONDecodeError:
+                    res_body = None
+
+                allure.attach(res_text, '接口响应信息', allure.attachment_type.TEXT)
+                allure.attach(self.allure_attach_response(res_body if res_body is not None else res_text),
+                              '接口响应信息', allure.attachment_type.TEXT)
 
                 try:
-                    res_json = json.loads(res_text)
-                    if extract is not None:
-                        self.extract_data(extract, res_text)
-                    if extract_lst is not None:
-                        self.extract_data_list(extract_lst, res_text)
+                    if res_body is not None:
+                        res_json = res_body
+                        if extract is not None:
+                            self.extract_data(extract, res_text)
+                        if extract_lst is not None:
+                            self.extract_data_list(extract_lst, res_text)
+                    else:
+                        res_json = {}
                     # 处理断言
-                    assert_res.assert_result(validation, res_json, status_code)
+                    assert_res.assert_result(validation, res_json, status_code, raw_response=res_text)
                 except JSONDecodeError as js:
                     logs.error("系统异常或接口未请求！")
                     raise js
