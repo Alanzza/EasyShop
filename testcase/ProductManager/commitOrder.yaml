@@ -1,7 +1,7 @@
 - baseInfo:
     api_name: 提交订单
     url: /coupApply/cms/placeAnOrder
-    method: post
+    method: POST
     header:
       Content-Type: application/json;charset=UTF-8
   testCase:
@@ -17,7 +17,13 @@
         consignee_info: {"name": "张三","phone": 13800000000,"address": "北京市海淀区西三环北路74号院4栋3单元1008"}
       validation:
         - eq: { 'message': '提交订单成功' }
-        - eq: {'error_code':'0000'}
+        - eq: { 'error_code': '0000' }
       extract:
         orderNumber: $.orderNumber
         userId: $.userId
+    - case_name: 使用GET方式提交订单
+      method: GET
+      params:
+        goods_id: ${get_extract_data(goodsId,0)}
+      validation:
+        - contains: { 'status_code': 405 }

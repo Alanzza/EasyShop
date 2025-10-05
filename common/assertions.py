@@ -18,7 +18,7 @@ class Assertions:
 
     """
 
-    def contains_assert(self, value, response, status_code):
+    def contains_assert(self, value, response, status_code, raw_response=None):
         """
         字符串包含断言模式，断言预期结果的字符串是否包含在接口的响应信息中
         :param value: 预期结果，yaml文件的预期结果值
@@ -36,18 +36,38 @@ class Assertions:
                                   attachment_type=allure.attachment_type.TEXT)
                     logs.error("contains断言失败：接口返回码【%s】不等于【%s】" % (status_code, assert_value))
             else:
-                resp_list = jsonpath.jsonpath(response, "$..%s" % assert_key)
-                if isinstance(resp_list[0], str):
-                    resp_list = ''.join(resp_list)
+                resp_list = []
+                if isinstance(response, (dict, list)):
+                    jsonpath_result = jsonpath.jsonpath(response, "$..%s" % assert_key)
+                    if jsonpath_result and isinstance(jsonpath_result, list):
+                        resp_list = jsonpath_result
+                elif raw_response is not None:
+                    resp_list = [raw_response]
+
                 if resp_list:
-                    assert_value = None if assert_value.upper() == 'NONE' else assert_value
-                    if assert_value in resp_list:
-                        logs.info("字符串包含断言成功：预期结果【%s】,实际结果【%s】" % (assert_value, resp_list))
+                    target = resp_list
+                    if len(resp_list) == 1:
+                        target = resp_list[0]
+                    if isinstance(target, list) and target and isinstance(target[0], str):
+                        target = ''.join(target)
+                    assert_value = None if isinstance(assert_value, str) and assert_value.upper() == 'NONE' else assert_value
+                    if isinstance(target, (list, tuple, set)):
+                        match = assert_value in target
                     else:
-                        flag = flag + 1
-                        allure.attach(f"预期结果：{assert_value}\n实际结果：{resp_list}", '响应文本断言结果：失败',
+                        match = str(assert_value) in str(target)
+                    if match:
+                        logs.info("字符串包含断言成功：预期结果【%s】,实际结果【%s】" % (assert_value, target))
+                    else:
+                        flag += 1
+                        allure.attach(f"预期结果：{assert_value}\n实际结果：{target}", '响应文本断言结果：失败',
                                       attachment_type=allure.attachment_type.TEXT)
-                        logs.error("响应文本断言失败：预期结果为【%s】,实际结果为【%s】" % (assert_value, resp_list))
+                        logs.error("响应文本断言失败：预期结果为【%s】,实际结果为【%s】" % (assert_value, target))
+                else:
+                    flag += 1
+                    actual_text = raw_response if raw_response is not None else response
+                    allure.attach(f"预期结果：{assert_value}\n实际结果：{actual_text}", '响应文本断言结果：失败',
+                                  attachment_type=allure.attachment_type.TEXT)
+                    logs.error("响应文本断言失败：预期结果为【%s】,实际结果为空或未匹配到" % assert_value)
         return flag
 
     def equal_assert(self, expected_results, actual_results, statuc_code=None):
@@ -157,7 +177,7 @@ class Assertions:
             logs.error("数据库断言失败，请检查数据库是否存在该数据！")
         return flag
 
-    def assert_result(self, expected, response, status_code):
+    def assert_result(self, expected, response, status_code, raw_response=None):
         """
         断言，通过断言all_flag标记，all_flag==0表示测试通过，否则为失败
         :param expected: 预期结果
@@ -173,7 +193,7 @@ class Assertions:
             for yq in expected:
                 for key, value in yq.items():
                     if key == "contains":
-                        flag = self.contains_assert(value, response, status_code)
+                        flag = self.contains_assert(value, response, status_code, raw_response=raw_response)
                         all_flag = all_flag + flag
                     elif key == "eq":
                         flag = self.equal_assert(value, response)
