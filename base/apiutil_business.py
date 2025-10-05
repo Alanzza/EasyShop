@@ -79,8 +79,7 @@ class RequestBase(object):
             allure.attach(url, f'接口地址：{url}')
             api_name = case_info["baseInfo"]["api_name"]
             allure.attach(api_name, f'接口名：{api_name}')
-            method = case_info["baseInfo"]["method"]
-            allure.attach(method, f'请求方法：{method}')
+            base_method = case_info["baseInfo"].get("method")
             header = self.replace_load(case_info["baseInfo"]["header"])
             allure.attach(str(header), '请求头信息', allure.attachment_type.TEXT)
             try:
@@ -91,12 +90,17 @@ class RequestBase(object):
             for tc in case_info["testCase"]:
                 case_name = tc.pop("case_name")
                 allure.attach(case_name, f'测试用例名称：{case_name}', allure.attachment_type.TEXT)
+                case_method = tc.pop('method', base_method)
+                allure.attach(str(case_method), f'请求方法：{case_method}')
                 # 断言结果解析替换
-                val = self.replace_load(tc.get('validation'))
-                tc['validation'] = val
-                # 字符串形式的列表转换为list类型
-                validation = eval(tc.pop('validation'))
-                allure_validation = str([str(list(i.values())) for i in validation])
+                validation_raw = tc.pop('validation', None)
+                if validation_raw is not None:
+                    val = self.replace_load(validation_raw)
+                    validation = eval(val) if isinstance(val, str) else val
+                    allure_validation = str([str(list(i.values())) for i in validation]) if validation else '[]'
+                else:
+                    validation = []
+                    allure_validation = '[]'
                 allure.attach(allure_validation, "预期结果", allure.attachment_type.TEXT)
                 extract = tc.pop('extract', None)
                 extract_lst = tc.pop('extract_list', None)
@@ -113,7 +117,7 @@ class RequestBase(object):
                                         case_name=case_name,
                                         header=header,
                                         cookies=cookie,
-                                        method=method,
+                                        method=case_method,
                                         file=files, **tc)
                 res_text = res.text
                 allure.attach(res_text, '接口响应信息', allure.attachment_type.TEXT)

@@ -11,3 +11,9 @@
       validation:
         - contains: { 'msg': '查询成功' }
         - eq: { 'msg_code': 200 }
+    - case_name: 使用GET方式查询用户
+      method: GET
+      params:
+        user_id: 123839387391912
+      validation:
+        - contains: { 'status_code': 200 }

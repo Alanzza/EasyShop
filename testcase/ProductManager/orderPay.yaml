@@ -1,7 +1,7 @@
 - baseInfo:
     api_name: 订单支付
     url: /coupApply/cms/orderPay
-    method: post
+    method: POST
     header:
       Content-Type: application/json;charset=UTF-8
   testCase:
@@ -13,3 +13,10 @@
       validation:
         - contains: { 'message': '订单支付成功' }
         - contains: { 'error_code': '0000' }
+    - case_name: 使用GET方式支付订单
+      method: GET
+      params:
+        orderNumber: ${get_extract_data(orderNumber)}
+        userId: ${get_extract_data(userId)}
+      validation:
+        - contains: { 'status_code': 405 }

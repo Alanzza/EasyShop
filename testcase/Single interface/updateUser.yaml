@@ -15,3 +15,13 @@
       validation:
         - contains: { 'status_code': 200 }
         - contains: { 'msg': '更新成功' }
+    - case_name: 使用GET方式修改用户信息
+      method: GET
+      params:
+        username: testadduser
+        password: tset6789#$123
+        role_id: 89588181111112343
+        dates: '2023-12-31'
+        phone: 13800000000
+      validation:
+        - contains: { 'status_code': 405 }
