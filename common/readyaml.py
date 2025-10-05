@@ -1,6 +1,7 @@
 import yaml
 import traceback
 import os
+from copy import deepcopy
 
 from common.recordlog import logs
 from conf.operationConfig import OperationConfig
@@ -8,20 +9,99 @@ from conf.setting import FILE_PATH
 from yaml.scanner import ScannerError
 
 
+def _expand_missing_field_cases(test_case):
+    """根据missing_fields配置生成多条缺失字段的用例"""
+
+    case_copy = deepcopy(test_case)
+    missing_fields = case_copy.pop('missing_fields', None)
+    if not missing_fields:
+        return [case_copy]
+
+    if not isinstance(missing_fields, list):
+        missing_fields = [missing_fields]
+
+    payload_keys = ['data', 'json', 'params']
+    expanded_cases = []
+
+    for item in missing_fields:
+        field_name = None
+        mode = 'remove'
+        value = None
+        container = None
+
+        if isinstance(item, dict):
+            field_name = item.get('field')
+            mode = item.get('mode', mode)
+            value = item.get('value')
+            container = item.get('container') or item.get('target')
+            label = item.get('label')
+        else:
+            field_name = item
+            label = None
+
+        if not field_name:
+            logs.error('missing_fields配置中缺少field，请检查yaml文件！')
+            continue
+
+        variant = deepcopy(case_copy)
+        case_name = variant.get('case_name', '')
+        field_label = str(label or field_name)
+        if '{field}' in case_name:
+            variant['case_name'] = case_name.replace('{field}', field_label)
+        else:
+            variant['case_name'] = f"{case_name}[{field_label}]" if case_name else field_label
+
+        payload_key = container
+        if payload_key is None:
+            for key in payload_keys:
+                if key in variant:
+                    payload_key = key
+                    break
+
+        if payload_key is None:
+            payload_key = 'data'
+
+        payload_data = deepcopy(variant.get(payload_key, {})) if isinstance(variant.get(payload_key), dict) else {}
+
+        if mode == 'empty':
+            payload_data[field_name] = '' if value is None else value
+        elif mode == 'null':
+            payload_data[field_name] = None
+        elif value is not None:
+            payload_data[field_name] = value
+        else:
+            payload_data.pop(field_name, None)
+
+        variant[payload_key] = payload_data
+        expanded_cases.append(variant)
+
+    return expanded_cases or [case_copy]
+
+
 def get_testcase_yaml(file):
     testcase_list = []
     try:
         with open(file, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
+            if not data:
+                return testcase_list
+
             if len(data) <= 1:
                 yam_data = data[0]
-                base_info = yam_data.get('baseInfo')
-                for ts in yam_data.get('testCase'):
-                    param = [base_info, ts]
-                    testcase_list.append(param)
+                base_info = deepcopy(yam_data.get('baseInfo', {}))
+                for ts in yam_data.get('testCase', []):
+                    for expanded in _expand_missing_field_cases(ts):
+                        testcase_list.append([deepcopy(base_info), expanded])
                 return testcase_list
-            else:
-                return data
+
+            result = []
+            for block in data:
+                base_info = deepcopy(block.get('baseInfo', {}))
+                cases = []
+                for ts in block.get('testCase', []):
+                    cases.extend(_expand_missing_field_cases(ts))
+                result.append({'baseInfo': base_info, 'testCase': cases})
+            return result
     except UnicodeDecodeError:
         logs.error(f"[{file}]文件编码格式错误，--尝试使用utf-8编码解码YAML文件时发生了错误，请确保你的yaml文件是UTF-8格式！")
     except FileNotFoundError:

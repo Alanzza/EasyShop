@@ -16,34 +16,30 @@
       validation:
         - contains: { 'status_code': 200 }
         - contains: { 'msg': '新增成功' }
-    - case_name: 无效新增·缺少token
+    - case_name: 无效新增·缺少必填参数{field}
       data:
         username: testadduser
         password: tset6789890
         role_id: 123456789
         dates: '2023-12-31'
         phone: 13800000000
-        token:
+        token: ${get_extract_data(token)}
+      missing_fields:
+        - field: token
+          mode: empty
+        - field: username
+        - field: role_id
       validation:
         - contains: { 'status_code': 200 }
         - contains: { 'msg': '新增失败' }
-    - case_name: 无效新增·缺少必填参数username
-      data:
+    - case_name: 使用GET方式新增用户
+      method: GET
+      params:
+        username: testadduser
         password: tset6789890
         role_id: 123456789
         dates: '2023-12-31'
         phone: 13800000000
-        token:
+        token: ${get_extract_data(token)}
       validation:
-        - contains: { 'status_code': 200 }
-        - contains: { 'msg': '新增失败' }
-    - case_name: 无效新增·缺少必填参数role_id
-      data:
-        username: testadduser
-        password: tset6789890
-        dates: '2023-12-31'
-        phone: 13800000000
-        token:
-      validation:
-        - contains: { 'status_code': 200 }
-        - contains: { 'msg': '新增失败' }
+        - contains: { 'status_code': 405 }

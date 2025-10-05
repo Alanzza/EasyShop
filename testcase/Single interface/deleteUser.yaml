@@ -15,11 +15,21 @@
         user_id: 1238393873922
       validation:
         - contains: { 'msg': '删除失败' }
-    - case_name: 无效删除用户·userid为空
+    - case_name: 无效删除用户·缺少必填参数{field}
       data:
         user_id: 1238393873922
+      missing_fields:
+        - field: user_id
+          mode: empty
+          label: user_id为空
+        - field: user_id
+          mode: remove
+          label: 缺少user_id参数
       validation:
         - contains: { 'msg': '删除失败' }
-    - case_name: 无效删除用户·缺少必填参数
+    - case_name: 使用GET方式删除用户
+      method: GET
+      params:
+        user_id: 123839387391912
       validation:
-        - contains: { 'msg': '删除失败' }
+        - contains: { 'status_code': 405 }

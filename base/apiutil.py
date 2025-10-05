@@ -66,8 +66,7 @@ class RequestBase:
             allure.attach(api_name, f'接口名称：{api_name}', allure.attachment_type.TEXT)
             url = url_host + base_info['url']
             allure.attach(api_name, f'接口地址：{url}', allure.attachment_type.TEXT)
-            method = base_info['method']
-            allure.attach(api_name, f'请求方法：{method}', allure.attachment_type.TEXT)
+            base_method = base_info.get('method')
             header = self.replace_load(base_info['header'])
             allure.attach(api_name, f'请求头：{header}', allure.attachment_type.TEXT)
             # 处理cookie
@@ -76,10 +75,15 @@ class RequestBase:
                 cookie = eval(self.replace_load(base_info['cookies']))
             case_name = test_case.pop('case_name')
             allure.attach(api_name, f'测试用例名称：{case_name}', allure.attachment_type.TEXT)
+            case_method = test_case.pop('method', base_method)
+            allure.attach(api_name, f'请求方法：{case_method}', allure.attachment_type.TEXT)
             # 处理断言
-            val = self.replace_load(test_case.get('validation'))
-            test_case['validation'] = val
-            validation = eval(test_case.pop('validation'))
+            validation_raw = test_case.pop('validation', None)
+            if validation_raw is not None:
+                val = self.replace_load(validation_raw)
+                validation = eval(val) if isinstance(val, str) else val
+            else:
+                validation = []
             # 处理参数提取
             extract = test_case.pop('extract', None)
             extract_list = test_case.pop('extract_list', None)
@@ -95,7 +99,7 @@ class RequestBase:
                     allure.attach(json.dumps(file), '导入文件')
                     files = {fk: open(fv, mode='rb')}
 
-            res = self.run.run_main(name=api_name, url=url, case_name=case_name, header=header, method=method,
+            res = self.run.run_main(name=api_name, url=url, case_name=case_name, header=header, method=case_method,
                                     file=files, cookies=cookie, **test_case)
             status_code = res.status_code
             allure.attach(self.allure_attach_response(res.json()), '接口响应信息', allure.attachment_type.TEXT)
