@@ -7,6 +7,8 @@
       token: ${get_extract_data(cookie)}
   testCase:
     - case_name: 获取商品列表
+      support:
+        - GET
       params:
         msgType: getHandsetListOfCust
         page: 1
@@ -15,11 +17,3 @@
         - contains: { 'error_code': '0000' }
       extract_list:
         goodsId: $.goodsList[*].goodsId
-    - case_name: 使用POST方式获取商品列表
-      method: POST
-      data:
-        msgType: getHandsetListOfCust
-        page: 1
-        size: 20
-      validation:
-        - contains: { 'status_code': 405 }

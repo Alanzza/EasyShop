@@ -6,6 +6,8 @@
       Content-Type: application/x-www-form-urlencoded;charset=UTF-8
   testCase:
     - case_name: 有效删除用户
+      support:
+        - POST
       data:
         user_id: 123839387391912
       validation:
@@ -27,9 +29,3 @@
           label: 缺少user_id参数
       validation:
         - contains: { 'msg': '删除失败' }
-    - case_name: 使用GET方式删除用户
-      method: GET
-      params:
-        user_id: 123839387391912
-      validation:
-        - contains: { 'status_code': 405 }
