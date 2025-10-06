@@ -1,5 +1,6 @@
 import json
 import re
+from copy import deepcopy
 from json.decoder import JSONDecodeError
 
 import allure
@@ -60,6 +61,10 @@ class RequestBase:
         :return:
         """
         try:
+            if isinstance(base_info, dict):
+                base_info = deepcopy(base_info)
+            if isinstance(test_case, dict):
+                test_case = deepcopy(test_case)
             params_type = ['data', 'json', 'params']
             url_host = self.conf.get_section_for_data('api_envi', 'host')
             api_name = base_info['api_name']
