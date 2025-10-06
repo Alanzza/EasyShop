@@ -82,3 +82,14 @@ class OperationConfig:
 
     def get_section_ssh(self, option):
         return self.get_section_for_data("SSH", option)
+
+    def get_request_methods(self):
+        """获取需要验证的不支持请求方式集合"""
+        raw_value = self.get_section_for_data('REQUEST_METHODS', 'candidates')
+        if not raw_value:
+            return ['GET', 'POST', 'DELETE', 'PUT', 'TRACE']
+        if isinstance(raw_value, (list, tuple)):
+            methods = [str(item).strip().upper() for item in raw_value if str(item).strip()]
+        else:
+            methods = [segment.strip().upper() for segment in str(raw_value).split(',') if segment.strip()]
+        return methods or ['GET', 'POST', 'DELETE', 'PUT', 'TRACE']

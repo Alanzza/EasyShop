@@ -8,6 +8,12 @@ from conf.operationConfig import OperationConfig
 from conf.setting import FILE_PATH
 from yaml.scanner import ScannerError
 
+try:
+    _REQUEST_METHOD_CANDIDATES = OperationConfig().get_request_methods()
+except Exception:
+    logs.error('加载REQUEST_METHODS配置失败，使用默认请求方式集合')
+    _REQUEST_METHOD_CANDIDATES = ['GET', 'POST', 'DELETE', 'PUT', 'TRACE']
+
 
 def _expand_missing_field_cases(test_case):
     """根据missing_fields配置生成多条缺失字段的用例"""
@@ -78,6 +84,49 @@ def _expand_missing_field_cases(test_case):
     return expanded_cases or [case_copy]
 
 
+def _expand_method_cases(test_case):
+    """根据support字段自动生成不支持请求方式的用例"""
+
+    case_copy = deepcopy(test_case)
+    support_value = case_copy.pop('support', None)
+    if support_value is None:
+        return [case_copy]
+
+    if isinstance(support_value, str):
+        support_methods = {support_value.strip().upper()} if support_value.strip() else set()
+    elif isinstance(support_value, (list, tuple, set)):
+        support_methods = {str(item).strip().upper() for item in support_value if str(item).strip()}
+    else:
+        logs.error('support字段仅支持字符串或列表，请检查yaml文件！')
+        support_methods = set()
+
+    supported = support_methods or set()
+    method_pool = [method for method in _REQUEST_METHOD_CANDIDATES if method]
+    unsupported_methods = [method for method in method_pool if method not in supported]
+
+    results = [case_copy]
+    base_name = case_copy.get('case_name', '')
+
+    for method in unsupported_methods:
+        variant = deepcopy(case_copy)
+        variant.pop('extract', None)
+        variant.pop('extract_list', None)
+        variant['method'] = method
+        if method.upper() in {'GET', 'DELETE'} and 'params' not in variant:
+            for payload_key in ('json', 'data'):
+                payload_value = variant.get(payload_key)
+                if isinstance(payload_value, dict):
+                    variant['params'] = deepcopy(payload_value)
+                    variant.pop(payload_key, None)
+                    break
+        label = f"{base_name}-不支持的请求方式[{method}]" if base_name else f"不支持的请求方式[{method}]"
+        variant['case_name'] = label
+        variant['validation'] = [{'contains': {'status_code': 405}}]
+        results.append(variant)
+
+    return results
+
+
 def get_testcase_yaml(file):
     testcase_list = []
     try:
@@ -91,7 +140,8 @@ def get_testcase_yaml(file):
                 base_info = deepcopy(yam_data.get('baseInfo', {}))
                 for ts in yam_data.get('testCase', []):
                     for expanded in _expand_missing_field_cases(ts):
-                        testcase_list.append([deepcopy(base_info), expanded])
+                        for case_variant in _expand_method_cases(expanded):
+                            testcase_list.append([deepcopy(base_info), case_variant])
                 return testcase_list
 
             result = []
@@ -99,7 +149,8 @@ def get_testcase_yaml(file):
                 base_info = deepcopy(block.get('baseInfo', {}))
                 cases = []
                 for ts in block.get('testCase', []):
-                    cases.extend(_expand_missing_field_cases(ts))
+                    for expanded in _expand_missing_field_cases(ts):
+                        cases.extend(_expand_method_cases(expanded))
                 result.append({'baseInfo': base_info, 'testCase': cases})
             return result
     except UnicodeDecodeError:

@@ -6,6 +6,8 @@
       Content-Type: application/json;charset=UTF-8
   testCase:
     - case_name: 提交订单
+      support:
+        - POST
       json:
         goods_id: ${get_extract_data(goodsId,0)}
         number: 2
@@ -21,9 +23,3 @@
       extract:
         orderNumber: $.orderNumber
         userId: $.userId
-    - case_name: 使用GET方式提交订单
-      method: GET
-      params:
-        goods_id: ${get_extract_data(goodsId,0)}
-      validation:
-        - contains: { 'status_code': 405 }

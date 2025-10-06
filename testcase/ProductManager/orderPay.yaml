@@ -6,6 +6,8 @@
       Content-Type: application/json;charset=UTF-8
   testCase:
     - case_name: 订单支付
+      support:
+        - POST
       json:
         orderNumber: ${get_extract_data(orderNumber)}
         userId: ${get_extract_data(userId)}
@@ -13,10 +15,3 @@
       validation:
         - contains: { 'message': '订单支付成功' }
         - contains: { 'error_code': '0000' }
-    - case_name: 使用GET方式支付订单
-      method: GET
-      params:
-        orderNumber: ${get_extract_data(orderNumber)}
-        userId: ${get_extract_data(userId)}
-      validation:
-        - contains: { 'status_code': 405 }

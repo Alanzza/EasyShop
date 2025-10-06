@@ -6,17 +6,11 @@
       Content-Type: application/json;charset=UTF-8
   testCase:
     - case_name: 获取商品详情
+      support:
+        - POST
       json:
         pro_id: ${get_extract_data(goodsId)}
         page: 1
         size: 20
       validation:
         - contains: { 'error_code': '4000' }
-    - case_name: 使用GET方式获取商品详情
-      method: GET
-      params:
-        pro_id: ${get_extract_data(goodsId)}
-        page: 1
-        size: 20
-      validation:
-        - contains: { 'status_code': 405 }
