@@ -132,7 +132,6 @@ class RequestBase(object):
                 except JSONDecodeError:
                     res_body = None
 
-                allure.attach(res_text, '接口响应信息', allure.attachment_type.TEXT)
                 allure.attach(self.allure_attach_response(res_body if res_body is not None else res_text),
                               '接口响应信息', allure.attachment_type.TEXT)
                 if response_headers:

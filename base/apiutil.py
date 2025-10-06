@@ -68,20 +68,20 @@ class RequestBase:
             params_type = ['data', 'json', 'params']
             url_host = self.conf.get_section_for_data('api_envi', 'host')
             api_name = base_info['api_name']
-            allure.attach(api_name, f'接口名称：{api_name}', allure.attachment_type.TEXT)
+            allure.attach(api_name, '接口名称', allure.attachment_type.TEXT)
             url = url_host + base_info['url']
-            allure.attach(api_name, f'接口地址：{url}', allure.attachment_type.TEXT)
+            allure.attach(url, '接口地址', allure.attachment_type.TEXT)
             base_method = base_info.get('method')
             header = self.replace_load(base_info['header'])
-            allure.attach(api_name, f'请求头：{header}', allure.attachment_type.TEXT)
+            allure.attach(json.dumps(header, ensure_ascii=False, indent=2), '请求头', allure.attachment_type.TEXT)
             # 处理cookie
             cookie = None
             if base_info.get('cookies') is not None:
                 cookie = eval(self.replace_load(base_info['cookies']))
             case_name = test_case.pop('case_name')
-            allure.attach(api_name, f'测试用例名称：{case_name}', allure.attachment_type.TEXT)
+            allure.attach(case_name, '测试用例名称', allure.attachment_type.TEXT)
             case_method = test_case.pop('method', base_method)
-            allure.attach(api_name, f'请求方法：{case_method}', allure.attachment_type.TEXT)
+            allure.attach(case_method, '请求方法', allure.attachment_type.TEXT)
             # 处理断言
             validation_raw = test_case.pop('validation', None)
             if validation_raw is not None:
