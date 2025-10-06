@@ -13,3 +13,8 @@
       validation:
         - contains: { 'msg': '查询成功' }
         - eq: { 'msg_code': 200 }
+    - case_name: 无效查询用户·userid不存在
+      data:
+        user_id: 1238393873922
+      validation:
+        - contains: { 'msg': '查询失败' }
