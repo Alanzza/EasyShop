@@ -13,25 +13,22 @@ class Assertions:
     1）响应文本字符串包含模式断言
     2）响应结果相等断言
     3）响应结果不相等断言
-    4）响应结果任意值断言
-    5）数据库断言
+    4）数据库断言
 
     """
 
-    def contains_assert(self, value, response, status_code, headers=None):
-        """
-        字符串包含断言模式，断言预期结果的字符串是否包含在接口的响应信息中
+    def contains_assert(self, value, response, headers):
+        """ 字符串包含断言模式，断言预期结果的字符串是否包含在接口的响应信息中
         :param value: 预期结果，yaml文件的预期结果值
         :param response: 接口实际响应结果
-        :param status_code: 响应状态码
         :param headers: 响应头信息
         :return: 返回结果的状态标识
         """
-        # 断言状态标识，0成功，其他失败
         flag = 0
         headers = headers or {}
 
         def _lookup_header(header_key):
+            # 大小写不敏感地在 headers 里找某个键
             header_value = None
             try:
                 if isinstance(headers, dict) and header_key in headers:
@@ -52,58 +49,39 @@ class Assertions:
             return header_value
 
         for assert_key, assert_value in value.items():
-            if assert_key == "status_code":
-                header_status = _lookup_header('status_code') or _lookup_header('status')
-                actual_status = header_status if header_status is not None else status_code
-                try:
-                    expected_status = int(assert_value)
-                    actual_status_int = int(str(actual_status))
-                    status_match = expected_status == actual_status_int
-                except Exception:
-                    status_match = str(assert_value) == str(actual_status)
-                if not status_match:
-                    flag += 1
-                    allure.attach(f"预期结果：{assert_value}\n实际结果：{actual_status}", '响应代码断言结果:失败',
-                                  attachment_type=allure.attachment_type.TEXT)
-                    logs.error("contains断言失败：接口返回码【%s】不等于【%s】" % (actual_status, assert_value))
-            else:
-                resp_list = []
-                if isinstance(response, (dict, list)):
-                    jsonpath_result = jsonpath.jsonpath(response, "$..%s" % assert_key)
-                    if jsonpath_result and isinstance(jsonpath_result, list):
-                        resp_list = jsonpath_result
-                if not resp_list:
-                    header_value = _lookup_header(assert_key)
-                    if header_value is not None:
-                        resp_list = [header_value]
+            resp_list = []
+            if isinstance(response, (dict, list)):
+                # 在整个 JSON 树找同名 key
+                jsonpath_result = jsonpath.jsonpath(response, "$..%s" % assert_key)
+                if jsonpath_result and isinstance(jsonpath_result, list):
+                    resp_list = jsonpath_result
+            if not resp_list:
+                header_value = _lookup_header(assert_key)
+                if header_value is not None:
+                    resp_list = [header_value]
 
-                if resp_list:
-                    target = resp_list
-                    if len(resp_list) == 1:
-                        target = resp_list[0]
-                    if isinstance(target, list) and target and isinstance(target[0], str):
-                        target = ''.join(target)
-                    assert_value = None if isinstance(assert_value, str) and assert_value.upper() == 'NONE' else assert_value
-                    if isinstance(target, (list, tuple, set)):
-                        match = assert_value in target
-                    else:
-                        match = str(assert_value) in str(target)
-                    if match:
-                        logs.info("字符串包含断言成功：预期结果【%s】,实际结果【%s】" % (assert_value, target))
-                    else:
-                        flag += 1
-                        allure.attach(f"预期结果：{assert_value}\n实际结果：{target}", '响应文本断言结果：失败',
-                                      attachment_type=allure.attachment_type.TEXT)
-                        logs.error("响应文本断言失败：预期结果为【%s】,实际结果为【%s】" % (assert_value, target))
+            if resp_list:
+                target = resp_list[0] if len(resp_list) == 1 else resp_list
+                if isinstance(target, list) and target and isinstance(target[0], str):
+                    target = ''.join(target)
+                expected = None if (isinstance(assert_value, str) and assert_value.upper() == 'NONE') else assert_value
+                if isinstance(target, (list, tuple, set)):
+                    match = expected in target
                 else:
+                    match = str(expected) in str(target)
+                if not match:
                     flag += 1
-                    actual_text = headers if headers is not None else response
-                    allure.attach(f"预期结果：{assert_value}\n实际结果：{actual_text}", '响应文本断言结果：失败',
+                    allure.attach(f"预期包含：{expected}\n实际：{target}", '包含断言：失败',
                                   attachment_type=allure.attachment_type.TEXT)
-                    logs.error("响应文本断言失败：预期结果为【%s】,实际结果为空或未匹配到" % assert_value)
+                    logs.error(f"包含断言失败：预期包含【{expected}】，实际【{target}】")
+            else:
+                flag += 1
+                allure.attach(f"未找到断言目标键：{assert_key}", '包含断言：失败',
+                              attachment_type=allure.attachment_type.TEXT)
+                logs.error(f"包含断言失败：未找到键【{assert_key}】")
         return flag
 
-    def equal_assert(self, expected_results, actual_results, statuc_code=None):
+    def equal_assert(self, expected_results, actual_results):
         """
         相等断言模式
         :param expected_results: 预期结果，yaml文件validation值
@@ -157,43 +135,6 @@ class Assertions:
             raise TypeError('不相等断言--类型错误，预期结果和接口实际响应结果必须为字典类型！')
         return flag
 
-    def assert_response_any(self, actual_results, expected_results):
-        """
-        断言接口响应信息中的body的任何属性值
-        :param actual_results: 接口实际响应信息
-        :param expected_results: 预期结果，在接口返回值的任意值
-        :return: 返回标识,0表示测试通过，非0则测试失败
-        """
-        flag = 0
-        try:
-            exp_key = list(expected_results.keys())[0]
-            if exp_key in actual_results:
-                act_value = actual_results[exp_key]
-                rv_assert = operator.eq(act_value, list(expected_results.values())[0])
-                if rv_assert:
-                    logs.info("响应结果任意值断言成功")
-                else:
-                    flag += 1
-                    logs.error("响应结果任意值断言失败")
-        except Exception as e:
-            logs.error(e)
-            raise
-        return flag
-
-    def assert_response_time(self, res_time, exp_time):
-        """
-        通过断言接口的响应时间与期望时间对比,接口响应时间小于预期时间则为通过
-        :param res_time: 接口的响应时间
-        :param exp_time: 预期的响应时间
-        :return:
-        """
-        try:
-            assert res_time < exp_time
-            return True
-        except Exception as e:
-            logs.error('接口响应时间[%ss]大于预期时间[%ss]' % (res_time, exp_time))
-            raise
-
     def assert_mysql_data(self, expected_results):
         """
         数据库断言
@@ -210,12 +151,12 @@ class Assertions:
             logs.error("数据库断言失败，请检查数据库是否存在该数据！")
         return flag
 
-    def assert_result(self, expected, response, status_code, headers=None):
+    def assert_result(self, expected, response, headers=None):
         """
         断言，通过断言all_flag标记，all_flag==0表示测试通过，否则为失败
         :param expected: 预期结果
         :param response: 实际响应结果
-        :param status_code: 响应code码
+        :param status_code: 响应实际code码
         :param headers: 响应头信息
         :return:
         """
@@ -227,20 +168,17 @@ class Assertions:
             for yq in expected:
                 for key, value in yq.items():
                     if key == "contains":
-                        flag = self.contains_assert(value, response, status_code, headers=headers)
-                        all_flag = all_flag + flag
+                        flag = self.contains_assert(value, response, headers=headers)
+                        all_flag += flag
                     elif key == "eq":
                         flag = self.equal_assert(value, response)
-                        all_flag = all_flag + flag
+                        all_flag += flag
                     elif key == 'ne':
                         flag = self.not_equal_assert(value, response)
-                        all_flag = all_flag + flag
-                    elif key == 'rv':
-                        flag = self.assert_response_any(actual_results=response, expected_results=value)
-                        all_flag = all_flag + flag
+                        all_flag += flag
                     elif key == 'db':
                         flag = self.assert_mysql_data(value)
-                        all_flag = all_flag + flag
+                        all_flag += flag
                     else:
                         logs.error("不支持此种断言方式")
 

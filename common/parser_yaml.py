@@ -6,7 +6,6 @@ from copy import deepcopy
 from common.log_util import logs
 from conf.config_util import OperationConfig
 from conf.setting import FILE_PATH
-from yaml.scanner import ScannerError
 
 try:
     _REQUEST_METHOD_CANDIDATES = OperationConfig().get_request_methods()

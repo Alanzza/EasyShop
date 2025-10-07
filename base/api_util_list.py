@@ -126,7 +126,7 @@ class RequestBase(object):
                                         header=header,
                                         cookies=cookie,
                                         method=case_method,
-                                        file=files, **tc)
+                                        files=files, **tc)
                 res_text = res.text
                 status_code = res.status_code
                 raw_headers = getattr(res, 'headers', {})
@@ -139,12 +139,9 @@ class RequestBase(object):
                     res_body = res.json()
                 except JSONDecodeError:
                     res_body = None
-
-                allure.attach(self.allure_attach_response(res_body if res_body is not None else res_text),
-                              '接口响应信息', allure.attachment_type.TEXT)
                 if response_headers:
                     allure.attach(json.dumps(response_headers, ensure_ascii=False, indent=4),
-                                  '响应Headers', allure.attachment_type.TEXT)
+                                  '响应头', allure.attachment_type.TEXT)
 
                 try:
                     if res_body is not None:
@@ -156,7 +153,7 @@ class RequestBase(object):
                     else:
                         res_json = {}
                     # 处理断言
-                    assert_res.assert_result(validation, res_json, status_code, headers=response_headers)
+                    assert_res.assert_result(validation, res_json, headers=response_headers)
                 except JSONDecodeError as js:
                     logs.error("系统异常或接口未请求！")
                     raise js

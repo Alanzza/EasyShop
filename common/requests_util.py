@@ -151,12 +151,14 @@ class SendRequest:
         **kwargs: Any,
     ) -> requests.Response:
         """
-        直接发送请求（底层统一入口）
+        直接发送请求
         :return: requests.Response
         """
+
+        # 设置超时时间，默认30秒
         timeout = timeout or getattr(setting, "API_TIMEOUT", 30)
 
-        # 记录与 Allure 附件
+        # log记录与 Allure 附件
         try:
             logs.info("请求方式：%s", method)
             logs.info("请求地址：%s", url)
@@ -216,7 +218,7 @@ class SendRequest:
             pytest.fail("接口请求异常：RequestException，请检查系统或用例数据是否正常！")
             raise
         finally:
-            # 若由上层传入文件对象，这里兜底关闭，避免句柄泄露
+            # 由上层传入文件对象，这里兜底关闭，避免句柄泄露
             try:
                 self._close_files(files)
             except Exception:
@@ -231,12 +233,11 @@ class SendRequest:
         header: Optional[Dict[str, Any]],
         method: str,
         cookies: Optional[Dict[str, Any]] = None,
-        file: Optional[Dict[str, Any]] = None,
         files: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> requests.Response:
         """
-        二次封装request的入口。
+        发起请求的入口。
         - 参数名 `file` 沿用旧代码；内部统一映射到 requests 的 `files`
         - kwargs 里期望含有 data/json/params 三类之一
         """
@@ -245,9 +246,6 @@ class SendRequest:
             logs.info("测试用例名称：%s", case_name)
         except Exception:
             pass
-
-        # 兼容旧参数：优先使用 files，否则回退旧的 file
-        files_payload = files if files is not None else file
 
         # 统一把请求参数作为一个 JSON 附件
         try:
@@ -267,7 +265,7 @@ class SendRequest:
             url=url,
             headers=header,
             cookies=cookies,
-            files=files_payload,
+            files=files,
             timeout=getattr(setting, "API_TIMEOUT", 30),
             verify=False,
             **kwargs,

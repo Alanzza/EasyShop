@@ -98,11 +98,12 @@ class RequestBase:
             header = replace_load_yaml(base_info['header'])
             allure.attach(json.dumps(header, ensure_ascii=False, indent=2), '请求头', allure.attachment_type.TEXT)
 
-            # 处理cookie
+            # 处理cookies
             cookie = None
             if base_info.get('cookies') is not None:
                 cookie = eval(replace_load_yaml(base_info['cookies']))
 
+            ''' 处理testCase '''
             # 提取测试用例基本信息（用例名称、用例请求方法[可能与base method不同]）并添加 Allure 报告附件
             case_name = test_case.pop('case_name')
             allure.attach(case_name, '测试用例名称', allure.attachment_type.TEXT)
@@ -117,7 +118,7 @@ class RequestBase:
             else:
                 validation = []
 
-            # 处理参数提取
+            # 获取返回后需要提取的参数
             extract = test_case.pop('extract', None)
             extract_list = test_case.pop('extract_list', None)
 
@@ -133,9 +134,9 @@ class RequestBase:
                     allure.attach(json.dumps(file), '导入文件')
                     files = {fk: open(fv, mode='rb')}
 
-            # 使用二次封装的requests发请求
+            # 发请求
             res = self.run.run_main(name=api_name, url=url, case_name=case_name, header=header, method=case_method,
-                                    file=files, cookies=cookie, **test_case)
+                                    files=files, cookies=cookie, **test_case)
 
             # 获取响应信息
             status_code = res.status_code
@@ -166,7 +167,7 @@ class RequestBase:
                 else:
                     res_json = {}
                 # 处理断言
-                self.asserts.assert_result(validation, res_json, status_code, headers=response_headers)
+                self.asserts.assert_result(validation, res_json, headers=response_headers)
             except JSONDecodeError as js:
                 logs.error('系统异常或接口未请求！')
                 raise js
@@ -203,11 +204,11 @@ class RequestBase:
                 # ---- JSONPath 提取（以 $ 开头的表达式视为 JSONPath）----
                 if '$' in value:
                     try:
-                        parsed = json.loads(response)
-                        jp = jsonpath.jsonpath(parsed, value)  # 命中返回 list，未命中返回 False/None
+                        parsed = json.loads(response) # 整个响应体解析为Python字典
+                        jp = jsonpath.jsonpath(parsed, value) # 从根节点($)取键值，命中返回列表，否则False/None
                         if isinstance(jp, list) and len(jp) > 0:
-                            extracted = jp[0]
-                            self.yml_parser.write_yaml_data({key: extracted})
+                            extracted = jp[0] # 取第一个元素作为提取结果
+                            self.yml_parser.write_yaml_data({key: extracted}) # 提取结果写入yaml文件
                         else:
                             self.yml_parser.write_yaml_data({key: f'未提取到数据，JSONPath无结果: {value}'})
                     except Exception as e:
