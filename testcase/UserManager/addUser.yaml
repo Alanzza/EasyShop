@@ -33,7 +33,6 @@
         - field: dates
         - field: phone
         - field: token
-          mode: empty
       validation:
         - contains: { 'status_code': 200 }
         - contains: { 'msg': '新增失败' }

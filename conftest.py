@@ -5,8 +5,6 @@ import pytest
 
 from common.parser_yaml import ReadYamlData
 from base.removefile import remove_file
-from common.dingRobot import send_dd_msg
-from conf.setting import dd_msg
 
 import warnings
 
@@ -63,5 +61,3 @@ def generate_test_summary(terminalreporter):
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """自动收集pytest框架执行的测试结果并打印摘要信息"""
     summary = generate_test_summary(terminalreporter)
-    if dd_msg:
-        send_dd_msg(summary)

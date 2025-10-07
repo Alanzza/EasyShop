@@ -15,11 +15,8 @@ API_TIMEOUT = 60
 # excel文件的sheet页，默认读取第一个sheet页的数据，int类型，第一个sheet为0，以此类推0.....9
 SHEET_ID = 0
 
-# 生成的测试报告类型，可以生成两个风格的报告，allure或tm
+# 生成的测试报告类型。可选allure或tm
 REPORT_TYPE = 'allure'
-
-# 是否发送钉钉消息
-dd_msg = False
 
 # 文件路径
 FILE_PATH = {

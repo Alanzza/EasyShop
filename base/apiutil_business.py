@@ -7,7 +7,7 @@ from common.parser_yaml import ReadYamlData
 from common.recordlog import logs
 from conf.operationConfig import OperationConfig
 from common.assertions import Assertions
-from common.debugtalk import DebugTalk
+from common.debugutil import DebugUtil
 import allure
 import json
 import jsonpath
@@ -52,7 +52,7 @@ class RequestBase(object):
                 # 函数里的参数
                 func_params = ref_all_params[ref_all_params.index("(") + 1:ref_all_params.index(")")]
                 # 传入替换的参数获取对应的值,*func_params按,分割重新得到一个字符串
-                extract_data = getattr(DebugTalk(), func_name)(*func_params.split(',') if func_params else "")
+                extract_data = getattr(DebugUtil(), func_name)(*func_params.split(',') if func_params else "")
                 if extract_data and isinstance(extract_data, list):
                     extract_data = ','.join(e for e in extract_data)
                 str_data = str_data.replace(ref_all_params, str(extract_data))

@@ -22,10 +22,5 @@
         user_id: 1238393873922
       missing_fields:
         - field: user_id
-          mode: empty
-          label: user_id为空
-        - field: user_id
-          mode: remove
-          label: 缺少user_id参数
       validation:
         - contains: { 'msg': '删除失败' }

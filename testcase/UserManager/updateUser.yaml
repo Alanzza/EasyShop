@@ -17,3 +17,19 @@
       validation:
         - contains: { 'status_code': 200 }
         - contains: { 'msg': '更新成功' }
+    - case_name: 无效修改用户·缺少必填参数{field}
+      data:
+          username: testadduser
+          password: tset6789#$123
+          role_id: 89588181111112343
+          dates: '2023-12-31'
+          phone: 13800000000
+      missing_fields:
+          - field: username
+          - field: password
+          - field: role_id
+          - field: dates
+          - field: phone
+      validation:
+          - contains: { 'status_code': 200 }
+          - contains: { 'msg': '更新失败' }

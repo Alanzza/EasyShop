@@ -7,12 +7,51 @@ import allure
 import jsonpath
 
 from common.assertions import Assertions
-from common.debugtalk import DebugTalk
+from common.debugutil import DebugUtil
 from common.parser_yaml import get_testcase_yaml, ReadYamlData
 from common.recordlog import logs
 from common.sendrequest import SendRequest
 from conf.operationConfig import OperationConfig
 from conf.setting import FILE_PATH
+
+
+def replace_load_yaml(data):
+    """yaml数据替换解析"""
+    str_data = data
+    if not isinstance(data, str):
+        str_data = json.dumps(data, ensure_ascii=False)
+        # print('从yaml文件获取的原始数据：', str_data)
+    for i in range(str_data.count('${')):
+        if '${' in str_data and '}' in str_data:
+            start_index = str_data.index('$')
+            end_index = str_data.index('}', start_index)
+            ref_all_params = str_data[start_index:end_index + 1]
+            # 取出yaml文件的函数名
+            func_name = ref_all_params[2:ref_all_params.index("(")]
+            # 取出函数里面的参数
+            func_params = ref_all_params[ref_all_params.index("(") + 1:ref_all_params.index(")")]
+            # 传入替换的参数获取对应的值,类的反射----getattr,setattr,del....
+            extract_data = getattr(DebugUtil(), func_name)(*func_params.split(',') if func_params else "")
+
+            if extract_data and isinstance(extract_data, list):
+                extract_data = ','.join(e for e in extract_data)
+            str_data = str_data.replace(ref_all_params, str(extract_data))
+            # print('通过解析后替换的数据：', str_data)
+
+    # 还原数据
+    if data and isinstance(data, dict):
+        data = json.loads(str_data)
+    else:
+        data = str_data
+    return data
+
+
+def allure_attach_response(response):
+    if isinstance(response, dict):
+        allure_response = json.dumps(response, ensure_ascii=False, indent=4)
+    else:
+        allure_response = response
+    return allure_response
 
 
 class RequestBase:
@@ -23,39 +62,9 @@ class RequestBase:
         self.read = ReadYamlData()
         self.asserts = Assertions()
 
-    def replace_load(self, data):
-        """yaml数据替换解析"""
-        str_data = data
-        if not isinstance(data, str):
-            str_data = json.dumps(data, ensure_ascii=False)
-            # print('从yaml文件获取的原始数据：', str_data)
-        for i in range(str_data.count('${')):
-            if '${' in str_data and '}' in str_data:
-                start_index = str_data.index('$')
-                end_index = str_data.index('}', start_index)
-                ref_all_params = str_data[start_index:end_index + 1]
-                # 取出yaml文件的函数名
-                func_name = ref_all_params[2:ref_all_params.index("(")]
-                # 取出函数里面的参数
-                func_params = ref_all_params[ref_all_params.index("(") + 1:ref_all_params.index(")")]
-                # 传入替换的参数获取对应的值,类的反射----getattr,setattr,del....
-                extract_data = getattr(DebugTalk(), func_name)(*func_params.split(',') if func_params else "")
-
-                if extract_data and isinstance(extract_data, list):
-                    extract_data = ','.join(e for e in extract_data)
-                str_data = str_data.replace(ref_all_params, str(extract_data))
-                # print('通过解析后替换的数据：', str_data)
-
-        # 还原数据
-        if data and isinstance(data, dict):
-            data = json.loads(str_data)
-        else:
-            data = str_data
-        return data
-
     def specification_yaml(self, base_info, test_case):
         """
-        接口请求处理基本方法
+        接口测试用例执行函数
         :param base_info: yaml文件里面的baseInfo
         :param test_case: yaml文件里面的testCase
         :return:
@@ -72,12 +81,12 @@ class RequestBase:
             url = url_host + base_info['url']
             allure.attach(url, '接口地址', allure.attachment_type.TEXT)
             base_method = base_info.get('method')
-            header = self.replace_load(base_info['header'])
+            header = replace_load_yaml(base_info['header'])
             allure.attach(json.dumps(header, ensure_ascii=False, indent=2), '请求头', allure.attachment_type.TEXT)
             # 处理cookie
             cookie = None
             if base_info.get('cookies') is not None:
-                cookie = eval(self.replace_load(base_info['cookies']))
+                cookie = eval(replace_load_yaml(base_info['cookies']))
             case_name = test_case.pop('case_name')
             allure.attach(case_name, '测试用例名称', allure.attachment_type.TEXT)
             case_method = test_case.pop('method', base_method)
@@ -85,7 +94,7 @@ class RequestBase:
             # 处理断言
             validation_raw = test_case.pop('validation', None)
             if validation_raw is not None:
-                val = self.replace_load(validation_raw)
+                val = replace_load_yaml(validation_raw)
                 validation = eval(val) if isinstance(val, str) else val
             else:
                 validation = []
@@ -95,7 +104,7 @@ class RequestBase:
             # 处理接口的请求参数
             for key, value in test_case.items():
                 if key in params_type:
-                    test_case[key] = self.replace_load(value)
+                    test_case[key] = replace_load_yaml(value)
 
             # 处理文件上传接口
             file, files = test_case.pop('files', None), None
@@ -119,8 +128,9 @@ class RequestBase:
             except JSONDecodeError:
                 res_body = None
 
-            allure.attach(self.allure_attach_response(res_body if res_body is not None else raw_text),
-                          '接口响应信息', allure.attachment_type.TEXT)
+            # 添加allure在sendrequest中实现
+            # allure.attach(self.allure_attach_response(res_body if res_body is not None else raw_text),
+            #               '接口响应信息', allure.attachment_type.TEXT)
             if response_headers:
                 allure.attach(json.dumps(response_headers, ensure_ascii=False, indent=4),
                               '响应Headers', allure.attachment_type.TEXT)
@@ -145,14 +155,6 @@ class RequestBase:
 
         except Exception as e:
             raise e
-
-    @classmethod
-    def allure_attach_response(cls, response):
-        if isinstance(response, dict):
-            allure_response = json.dumps(response, ensure_ascii=False, indent=4)
-        else:
-            allure_response = response
-        return allure_response
 
     def extract_data(self, testcase_extarct, response):
         """

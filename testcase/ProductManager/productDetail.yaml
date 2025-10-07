@@ -5,7 +5,7 @@
     header:
       Content-Type: application/json;charset=UTF-8
   testCase:
-    - case_name: 获取商品详情
+    - case_name: 有效获取商品详情
       support:
         - POST
       json:

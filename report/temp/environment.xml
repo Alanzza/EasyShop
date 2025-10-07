@@ -21,7 +21,7 @@
     </parameter>
     <parameter>
         <key>environment</key>
-        <value>生产环境</value>
+        <value>开发环境</value>
     </parameter>
     <parameter>
         <key>Project</key>

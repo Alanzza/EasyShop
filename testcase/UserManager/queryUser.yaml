@@ -8,6 +8,7 @@
     - case_name: 有效查询用户
       support:
         - POST
+        - GET
       data:
         user_id: 123839387391912
       validation:
@@ -16,5 +17,16 @@
     - case_name: 无效查询用户·userid不存在
       data:
         user_id: 1238393873922
+      validation:
+        - contains: { 'msg': '查询失败' }
+    - case_name: 无效查询用户·缺少必填参数{field}
+      data:
+        user_id: 1238393873922
+      missing_fields:
+        - field: user_id
+          mode: remove
+        - field: user_id
+          mode: empty
+          label: '-为空字符串'
       validation:
         - contains: { 'msg': '查询失败' }
