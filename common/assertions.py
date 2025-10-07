@@ -3,7 +3,7 @@ import allure
 import jsonpath
 import operator
 
-from common.recordlog import logs
+from common.log_util import logs
 from common.connection import ConnectMysql
 
 

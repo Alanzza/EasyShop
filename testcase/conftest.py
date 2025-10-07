@@ -1,8 +1,8 @@
 import pytest
 import allure
 from common.parser_yaml import get_testcase_yaml
-from base.apiutil import RequestBase
-from common.recordlog import logs
+from base.api_util import RequestBase
+from common.log_util import logs
 from common.connection import ConnectMysql
 
 

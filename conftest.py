@@ -9,14 +9,14 @@ from typing import Optional
 
 import pytest
 
-from base.removefile import remove_file
-from common.parser_yaml import ReadYamlData
-from common.recordlog import logs
-from common.sendmail import SendEmail
+from base.remove_file import remove_file
+from common.parser_yaml import YmalParser
+from common.log_util import logs
+from common.email_util import SendEmail
 from conf import setting
-from conf.operationConfig import OperationConfig
+from conf.config_util import OperationConfig
 
-yfd = ReadYamlData()
+yfd = YmalParser()
 config_reader = OperationConfig()
 
 

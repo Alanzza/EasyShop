@@ -3,8 +3,8 @@ import traceback
 import os
 from copy import deepcopy
 
-from common.recordlog import logs
-from conf.operationConfig import OperationConfig
+from common.log_util import logs
+from conf.config_util import OperationConfig
 from conf.setting import FILE_PATH
 from yaml.scanner import ScannerError
 
@@ -161,7 +161,7 @@ def get_testcase_yaml(file):
         logs.error(f'获取【{file}】文件数据时出现未知错误: {str(e)}')
 
 
-class ReadYamlData:
+class YmalParser:
     """读写接口的YAML格式测试数据"""
 
     def __init__(self, yaml_file=None):
@@ -260,7 +260,7 @@ class ReadYamlData:
         metd = yal_data[0].get('method')
         return metd
 
-    def get_request_parame(self):
+    def get_request_params(self):
         """
         获取yaml测试数据中的请求参数
         :return:

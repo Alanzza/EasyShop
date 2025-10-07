@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as et
 from conf.setting import FILE_PATH
-from common.recordlog import logs
+from common.log_util import logs
 
 
 class OperXML:

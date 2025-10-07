@@ -2,12 +2,12 @@
 # sys.path.insert(0, "..")
 
 
-from common.sendrequest import SendRequest
-from common.parser_yaml import ReadYamlData
-from common.recordlog import logs
-from conf.operationConfig import OperationConfig
+from common.requests_util import SendRequest
+from common.parser_yaml import YmalParser
+from common.log_util import logs
+from conf.config_util import OperationConfig
 from common.assertions import Assertions
-from common.debugutil import DebugUtil
+from common.extract_util import ExtractUtil
 import allure
 import json
 import jsonpath
@@ -21,7 +21,7 @@ assert_res = Assertions()
 class RequestBase(object):
     def __init__(self):
         self.run = SendRequest()
-        self.read = ReadYamlData()
+        self.read = YmalParser()
         self.conf = OperationConfig()
 
     def handler_yaml_list(self, data_dict):
@@ -47,12 +47,12 @@ class RequestBase(object):
                 end_index = str_data.index('}', start_index)
                 # yaml文件的参数，如：${get_yaml_data(loginname)}
                 ref_all_params = str_data[start_index:end_index + 1]
-                # 函数名，获取Debugtalk的方法
+                # 函数名，获取DebugUtil的方法
                 func_name = ref_all_params[2:ref_all_params.index("(")]
                 # 函数里的参数
                 func_params = ref_all_params[ref_all_params.index("(") + 1:ref_all_params.index(")")]
                 # 传入替换的参数获取对应的值,*func_params按,分割重新得到一个字符串
-                extract_data = getattr(DebugUtil(), func_name)(*func_params.split(',') if func_params else "")
+                extract_data = getattr(ExtractUtil(), func_name)(*func_params.split(',') if func_params else "")
                 if extract_data and isinstance(extract_data, list):
                     extract_data = ','.join(e for e in extract_data)
                 str_data = str_data.replace(ref_all_params, str(extract_data))
@@ -76,9 +76,9 @@ class RequestBase(object):
             base_url = self.conf.get_section_for_data('api_envi', 'host')
             # base_url = self.replace_load(case_info['baseInfo']['url'])
             url = base_url + case_info["baseInfo"]["url"]
-            allure.attach(url, f'接口地址：{url}')
+            allure.attach(url, '接口地址', allure.attachment_type.TEXT)
             api_name = case_info["baseInfo"]["api_name"]
-            allure.attach(api_name, f'接口名：{api_name}')
+            allure.attach(api_name, '接口名称', allure.attachment_type.TEXT)
             base_method = case_info["baseInfo"].get("method")
             header = self.replace_load(case_info["baseInfo"]["header"])
             allure.attach(str(header), '请求头信息', allure.attachment_type.TEXT)
@@ -89,9 +89,9 @@ class RequestBase(object):
                 pass
             for tc in case_info["testCase"]:
                 case_name = tc.pop("case_name")
-                allure.attach(case_name, f'测试用例名称：{case_name}', allure.attachment_type.TEXT)
+                allure.attach(case_name, '测试用例名称', allure.attachment_type.TEXT)
                 case_method = tc.pop('method', base_method)
-                allure.attach(str(case_method), f'请求方法：{case_method}')
+                allure.attach(str(case_method), '请求方法', allure.attachment_type.TEXT)
                 # 断言结果解析替换
                 validation_raw = tc.pop('validation', None)
                 if validation_raw is not None:

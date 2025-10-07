@@ -5,7 +5,7 @@ import traceback
 
 import configparser
 from conf import setting
-from common.recordlog import logs
+from common.log_util import logs
 
 
 class OperationConfig:

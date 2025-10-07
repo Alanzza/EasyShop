@@ -1,8 +1,8 @@
 import allure
 import pytest
 
-from base.generateId import m_id, c_id
-from base.apiutil import RequestBase
+from base.generate_id import m_id, c_id
+from base.api_util import RequestBase
 from common.parser_yaml import get_testcase_yaml
 
 

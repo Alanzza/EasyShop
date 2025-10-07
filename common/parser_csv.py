@@ -1,5 +1,5 @@
 import pandas as pd
-from common.recordlog import logs
+from common.log_util import logs
 import traceback
 
 

@@ -1,5 +1,5 @@
 - baseInfo:
-    description: 业务场景测试用例编写示范
+    description: 冒烟测试：商品列表到下单支付
     api_name: 商品列表
     url: /coupApply/cms/goodsList
     method: Get

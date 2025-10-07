@@ -9,9 +9,8 @@ import paramiko
 import pandas as pd
 from clickhouse_sqlalchemy import make_session, exceptions
 from sqlalchemy import create_engine
-from conf.operationConfig import OperationConfig
-from common.recordlog import logs
-from common.two_dimension_data import print_table
+from conf.config_util import OperationConfig
+from common.log_util import logs
 
 conf = OperationConfig()
 

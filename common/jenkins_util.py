@@ -2,10 +2,10 @@ import json
 import re
 
 import jenkins
-from conf.operationConfig import OperationConfig
+from conf.config_util import OperationConfig
 
 
-class PJenkins(object):
+class JenkinsUtil(object):
     conf = OperationConfig()
 
     def __init__(self):
@@ -75,7 +75,7 @@ class PJenkins(object):
 
 
 if __name__ == '__main__':
-    p = PJenkins()
+    p = JenkinsUtil()
     res = p.report_success_or_fail()
     # result = re.search(r'http://192.168.105.36:8088/job/hbjjapi/(.*?)allure', res).group(0)
     print(res)

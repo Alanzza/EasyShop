@@ -4,8 +4,8 @@ from email.mime.application import MIMEApplication  # 附件
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from conf.operationConfig import OperationConfig
-from common.recordlog import logs
+from conf.config_util import OperationConfig
+from common.log_util import logs
 
 conf = OperationConfig()
 

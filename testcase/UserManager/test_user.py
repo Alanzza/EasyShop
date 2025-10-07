@@ -2,8 +2,8 @@ import allure
 import pytest
 
 from common.parser_yaml import get_testcase_yaml
-from base.apiutil import RequestBase
-from base.generateId import m_id, c_id
+from base.api_util import RequestBase
+from base.generate_id import m_id, c_id
 
 
 @allure.feature(next(m_id) + '用户管理模块（单接口）')

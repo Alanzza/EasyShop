@@ -2,7 +2,6 @@
 import json
 import time
 import requests
-import urllib3
 import pytest
 import allure
 
@@ -12,8 +11,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from conf import setting
-from common.recordlog import logs
-from common.parser_yaml import ReadYamlData
+from common.log_util import logs
+from common.parser_yaml import YmalParser
 
 
 class SendRequest:
@@ -34,7 +33,7 @@ class SendRequest:
         respect_retry_after_header: bool = True,
     ):
         self.cookie = cookie or {}
-        self.read = ReadYamlData()
+        self.read = YmalParser()
 
         # 预置 Session + 重试策略（对 GET/POST/PUT/DELETE…通用）
         self.session = self._build_session(

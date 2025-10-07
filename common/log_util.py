@@ -13,7 +13,7 @@ if not os.path.exists(log_path):
 logfile_name = log_path + r"\test.{}.log".format(time.strftime("%Y%m%d"))
 
 
-class RecordLog:
+class LogUtil:
     """日志模块"""
 
     def __init__(self):
@@ -66,5 +66,5 @@ class RecordLog:
         return logger
 
 
-apilog = RecordLog()
+apilog = LogUtil()
 logs = apilog.output_logging()

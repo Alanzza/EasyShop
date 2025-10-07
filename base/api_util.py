@@ -7,11 +7,11 @@ import allure
 import jsonpath
 
 from common.assertions import Assertions
-from common.debugutil import DebugUtil
-from common.parser_yaml import get_testcase_yaml, ReadYamlData
-from common.recordlog import logs
-from common.sendrequest import SendRequest
-from conf.operationConfig import OperationConfig
+from common.extract_util import ExtractUtil
+from common.parser_yaml import get_testcase_yaml, YmalParser
+from common.log_util import logs
+from common.requests_util import SendRequest
+from conf.config_util import OperationConfig
 from conf.setting import FILE_PATH
 
 
@@ -31,7 +31,7 @@ def replace_load_yaml(data):
             # 取出函数里面的参数
             func_params = ref_all_params[ref_all_params.index("(") + 1:ref_all_params.index(")")]
             # 传入替换的参数获取对应的值,类的反射----getattr,setattr,del....
-            extract_data = getattr(DebugUtil(), func_name)(*func_params.split(',') if func_params else "")
+            extract_data = getattr(ExtractUtil(), func_name)(*func_params.split(',') if func_params else "")
 
             if extract_data and isinstance(extract_data, list):
                 extract_data = ','.join(e for e in extract_data)
@@ -59,7 +59,7 @@ class RequestBase:
     def __init__(self):
         self.run = SendRequest()
         self.conf = OperationConfig()
-        self.read = ReadYamlData()
+        self.read = YmalParser()
         self.asserts = Assertions()
 
     def specification_yaml(self, base_info, test_case):
