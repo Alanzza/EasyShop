@@ -4,7 +4,6 @@ from email.mime.application import MIMEApplication  # 附件
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from conf import setting
 from conf.operationConfig import OperationConfig
 from common.recordlog import logs
 
@@ -91,13 +90,13 @@ class SendEmail(object):
             connection.login(self.__user, self.__passwd)
             connection.sendmail(user, recipients, message.as_string())
         except smtplib.SMTPConnectError as e:
-            logs.error('邮箱服务器连接失败！', e)
+            logs.error('邮箱服务器连接失败：%s', e)
         except smtplib.SMTPAuthenticationError as e:
-            logs.error('邮箱服务器认证错误,POP3/SMTP服务未开启,密码应填写授权码!', e)
+            logs.error('邮箱服务器认证错误：%s', e)
         except smtplib.SMTPSenderRefused as e:
-            logs.error('发件人地址未经验证！', e)
+            logs.error('发件人地址未经验证：%s', e)
         except smtplib.SMTPDataError as e:
-            logs.error('发送的邮件内容包含了未被许可的信息，或被系统识别为垃圾邮件！', e)
+            logs.error('发送的邮件内容包含了未被许可的信息，或被系统识别为垃圾邮件：%s', e)
         except Exception as e:
             logs.error(e)
         else:

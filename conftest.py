@@ -20,6 +20,7 @@ yfd = ReadYamlData()
 config_reader = OperationConfig()
 
 
+# === 每次运行测试前清理旧数据 ===
 @pytest.fixture(scope="session", autouse=True)
 def clear_extract():
     # 禁用HTTPS告警，ResourceWarning
@@ -34,17 +35,7 @@ def pytest_sessionstart(session):
     session.config._custom_session_start_time = time.time()
 
 
-def _parse_bool(value):
-    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
-
-
-def _format_duration(seconds: float) -> str:
-    if seconds < 0:
-        seconds = 0
-    duration = datetime.timedelta(seconds=round(seconds))
-    return str(duration)
-
-
+# 获取测试会话的开始时间
 def _get_session_start_time(terminalreporter):
     return (
         getattr(terminalreporter, "_sessionstarttime", None)
@@ -53,6 +44,7 @@ def _get_session_start_time(terminalreporter):
     )
 
 
+# 收集报告中的nodeids,用于生成失败、错误和跳过的测试用例列表
 def _collect_report_nodeids(reports):
     node_ids = []
     for report in reports:
@@ -71,8 +63,7 @@ def generate_test_summary(terminalreporter):
     skipped_reports = terminalreporter.stats.get('skipped', [])
 
     start_time = _get_session_start_time(terminalreporter)
-    duration_seconds = time.time() - start_time if start_time else 0.0
-    duration = _format_duration(duration_seconds)
+    duration = time.time() - start_time if start_time else 0.0
 
     summary_lines = [
         "自动化测试结果 (请着重关注测试失败的接口)：",
@@ -81,7 +72,7 @@ def generate_test_summary(terminalreporter):
         f"测试失败数：{len(failed_reports)}",
         f"错误数量：{len(error_reports)}",
         f"跳过执行数量：{len(skipped_reports)}",
-        f"执行总时长：{duration}",
+        f"执行总时长：{duration:.2f}(秒)",
     ]
     summary = "\n".join(summary_lines)
     print(summary)
@@ -102,10 +93,19 @@ def generate_test_summary(terminalreporter):
     return detail_text.strip()
 
 
+# 解析布尔值
+def _parse_bool(value):
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+# 检查是否启用邮件发送功能
 def _should_send_email() -> bool:
-    return _parse_bool(config_reader.get_section_for_data('EMAIL', 'enable'))
+    enable_str = config_reader.get_section_for_data('EMAIL', 'enable')
+    enable_flag = str(enable_str).strip().lower() in {"1", "true", "yes", "y", "on"}
+    return enable_flag
 
 
+# 构建测试报告附件
 def _build_report_attachment() -> Optional[str]:
     if setting.REPORT_TYPE == 'allure':
         allure_dir = Path(setting.FILE_PATH['TEMP'])
@@ -122,6 +122,7 @@ def _build_report_attachment() -> Optional[str]:
     return None
 
 
+# 发送测试报告邮件
 def _send_summary_email(summary: str):
     if not _should_send_email():
         return
@@ -143,7 +144,9 @@ def _send_summary_email(summary: str):
                 logs.warning('临时报告压缩包删除失败: %s', attachment)
 
 
+# 注册pytest钩子函数，在测试会话结束时打印摘要信息
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """自动收集pytest框架执行的测试结果并打印摘要信息"""
+    time.sleep(0.5) # 睡眠0.5秒，确保summary最后打印
     summary = generate_test_summary(terminalreporter)
     _send_summary_email(summary)
