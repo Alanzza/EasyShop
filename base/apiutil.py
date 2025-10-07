@@ -128,9 +128,6 @@ class RequestBase:
             except JSONDecodeError:
                 res_body = None
 
-            # 添加allure在sendrequest中实现
-            # allure.attach(self.allure_attach_response(res_body if res_body is not None else raw_text),
-            #               '接口响应信息', allure.attachment_type.TEXT)
             if response_headers:
                 allure.attach(json.dumps(response_headers, ensure_ascii=False, indent=4),
                               '响应Headers', allure.attachment_type.TEXT)

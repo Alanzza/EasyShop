@@ -6,7 +6,7 @@ from base.apiutil import RequestBase
 from common.parser_yaml import get_testcase_yaml
 
 
-@allure.feature(next(m_id) + '商品管理（单接口）')
+@allure.feature(next(m_id) + '商品/订单管理（单接口）')
 class TestProduct:
 
     @allure.story(next(c_id) + "获取商品列表")
