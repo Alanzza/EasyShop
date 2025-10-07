@@ -27,6 +27,6 @@
           mode: remove
         - field: user_id
           mode: empty
-          label: '-为空字符串'
+          label: -user_id为空字符串
       validation:
         - contains: { 'msg': '查询失败' }

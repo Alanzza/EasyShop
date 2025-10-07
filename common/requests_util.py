@@ -104,13 +104,13 @@ class SendRequest:
                 body = resp.json()
                 allure.attach(
                     json.dumps(body, ensure_ascii=False, indent=2),
-                    name="响应Body(JSON)",
+                    name="响应体(JSON)",
                     attachment_type=allure.attachment_type.JSON,
                 )
             except Exception:
                 allure.attach(
                     resp.text or "",
-                    name="响应Body(原文)",
+                    name="响应体(原文)",
                     attachment_type=allure.attachment_type.TEXT,
                 )
         except Exception:

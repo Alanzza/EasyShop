@@ -18,10 +18,18 @@ from json.decoder import JSONDecodeError
 assert_res = Assertions()
 
 
+def safe_to_int(s: str):
+    """仅在纯数字时转 int，否则原样返回字符串"""
+    try:
+        return int(s) if isinstance(s, str) and s.isdigit() else s
+    except Exception:
+        return s
+
+
 class RequestBase(object):
     def __init__(self):
         self.run = SendRequest()
-        self.read = YmalParser()
+        self.yml_parser = YmalParser()
         self.conf = OperationConfig()
 
     def handler_yaml_list(self, data_dict):
@@ -167,35 +175,44 @@ class RequestBase(object):
             allure_response = response
         return allure_response
 
-    def extract_data(self, testcase_extract, response):
+    def extract_data(self, testcase_extarct, response):
         """
-        提取接口的返回参数，支持正则表达式和json提取，提取单个参数
-        :param testcase_extract: testcase文件yaml中的extract值
-        :param response: 接口的实际返回值,str类型
+        提取接口的返回值，支持正则表达式和json提取器
+        :param testcase_extarct: testcase文件yaml中的extract值
+        :param response: 接口的实际返回值
         :return:
         """
-        pattern_lst = ['(.+?)', '(.*?)', r'(\d+)', r'(\d*)']
         try:
-            for key, value in testcase_extract.items():
-                for pat in pattern_lst:
-                    if pat in value:
-                        ext_list = re.search(value, response)
-                        if pat in [r'(\d+)', r'(\d*)']:
-                            extract_date = {key: int(ext_list.group(1))}
+            pattern_lst = [r'(\d+)', r'(\d*)', '(.*?)', '(.+?)']
+            for key, value in testcase_extarct.items():
+                extracted = None
+
+                # ---- 正则提取 ----
+                is_regex = any(pat in value for pat in pattern_lst) or bool(re.search(r'\(.+?\)', value))
+                if is_regex and not value.strip().startswith('$'):
+                    m = re.search(value, response, re.S)
+                    if m:
+                        grp = m.group(1)
+                        # 若捕获到的是纯数字，尽量转成 int
+                        extracted = safe_to_int(grp)
+                        self.yml_parser.write_yaml_data({key: extracted})
+                        continue  # 单值提取完成
+
+                # ---- JSONPath 提取（以 $ 开头的表达式视为 JSONPath）----
+                if '$' in value:
+                    try:
+                        parsed = json.loads(response)
+                        jp = jsonpath.jsonpath(parsed, value)  # 命中返回 list，未命中返回 False/None
+                        if isinstance(jp, list) and len(jp) > 0:
+                            extracted = jp[0]
+                            self.yml_parser.write_yaml_data({key: extracted})
                         else:
-                            extract_date = {key: ext_list.group(1)}
-                        logs.info('正则提取到的参数：%s' % extract_date)
-                        self.read.write_yaml_data(extract_date)
-                if "$" in value:
-                    ext_json = jsonpath.jsonpath(json.loads(response), value)[0]
-                    if ext_json:
-                        extract_date = {key: ext_json}
-                    else:
-                        extract_date = {key: "未提取到数据，该接口返回结果可能为空"}
-                    logs.info('json提取到参数：%s' % extract_date)
-                    self.read.write_yaml_data(extract_date)
-        except:
-            logs.error('接口返回值提取异常，请检查yaml文件extract表达式是否正确！')
+                            self.yml_parser.write_yaml_data({key: f'未提取到数据，JSONPath无结果: {value}'})
+                    except Exception as e:
+                        logs.error(f'JSONPath 提取失败: {e}')
+                        self.yml_parser.write_yaml_data({key: f'未提取到数据，响应非JSON或JSONPath异常: {value}'})
+        except Exception as e:
+            logs.error(e)
 
     def extract_data_list(self, testcase_extract_list, response):
         """
@@ -206,20 +223,31 @@ class RequestBase(object):
         """
         try:
             for key, value in testcase_extract_list.items():
-                if "(.+?)" in value or "(.*?)" in value:
-                    ext_list = re.findall(value, response, re.S)
-                    if ext_list:
-                        extract_date = {key: ext_list}
-                        logs.info('正则提取到的参数：%s' % extract_date)
-                        self.read.write_yaml_data(extract_date)
+                # ---- 正则多值：任意捕获组都可（更通用），findall 返回列表 ----
+                if bool(re.search(r'\(.+?\)', value)) and not value.strip().startswith('$'):
+                    try:
+                        ext_list = re.findall(value, response, re.S)
+                        if ext_list:
+                            # 尝试把纯数字元素转 int，其余保持原样
+                            normalized = [safe_to_int(x) for x in ext_list]
+                            self.yml_parser.write_yaml_data({key: normalized})
+                            logs.info('正则提取到的参数：%s' % {key: normalized})
+                    except Exception as e:
+                        logs.error(f'正则提取异常: {e}')
+                # ---- JSONPath 多值 ----
                 if "$" in value:
-                    # 增加提取判断，有些返回结果为空提取不到，给一个默认值
-                    ext_json = jsonpath.jsonpath(json.loads(response), value)
-                    if ext_json:
-                        extract_date = {key: ext_json}
-                    else:
-                        extract_date = {key: "未提取到数据，该接口返回结果可能为空"}
-                    logs.info('json提取到参数：%s' % extract_date)
-                    self.read.write_yaml_data(extract_date)
+                    try:
+                        parsed = json.loads(response)
+                        ext_json = jsonpath.jsonpath(parsed, value)
+                        if isinstance(ext_json, list) and len(ext_json) > 0:
+                            self.yml_parser.write_yaml_data({key: ext_json})
+                            logs.info('json提取到参数：%s' % {key: ext_json})
+                        else:
+                            self.yml_parser.write_yaml_data({key: "未提取到数据，该接口返回结果可能为空"})
+                            logs.info('json提取为空：%s' % {key: value})
+                    except Exception as e:
+                        logs.error(f'JSONPath 提取失败: {e}')
+                        self.yml_parser.write_yaml_data({key: f'未提取到数据，响应非JSON或JSONPath异常: {value}'})
+                        wrote = True
         except:
             logs.error('接口返回值提取异常，请检查yaml文件extract_list表达式是否正确！')

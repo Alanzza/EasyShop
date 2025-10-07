@@ -1,13 +1,8 @@
-import base64
-import calendar
-import datetime
-import hashlib
 import os.path
 import random
 import re
 import time
 from conf.setting import DIR_BASE
-from pandas.tseries.offsets import Day
 from common.parser_yaml import YmalParser
 import csv
 
