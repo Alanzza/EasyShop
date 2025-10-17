@@ -156,7 +156,6 @@ class Assertions:
         断言，通过断言all_flag标记，all_flag==0表示测试通过，否则为失败
         :param expected: 预期结果
         :param response: 实际响应结果
-        :param status_code: 响应实际code码
         :param headers: 响应头信息
         :return:
         """
